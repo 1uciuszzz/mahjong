@@ -86,7 +86,12 @@ const CreateRoomForm = forwardRef<CreateRoomFormHandles, CreateRoomFormProps>(
 
     return (
       <Dialog open={open} onOpenChange={(open) => setOpen(open)}>
-        <DialogContent className="max-w-sm">
+        <DialogContent
+          className="max-w-sm"
+          onOpenAutoFocus={(e) => {
+            e.preventDefault();
+          }}
+        >
           <DialogHeader>
             <DialogTitle>创建房间</DialogTitle>
             <DialogDescription />

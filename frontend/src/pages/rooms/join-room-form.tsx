@@ -92,7 +92,12 @@ const JoinRoomForm = forwardRef<JoinRoomFormHandles, JoinRoomFormProps>(
           setOpen(open);
         }}
       >
-        <DialogContent className="max-w-sm">
+        <DialogContent
+          className="max-w-sm"
+          onOpenAutoFocus={(e) => {
+            e.preventDefault();
+          }}
+        >
           <DialogHeader>
             <DialogTitle>{room?.name}</DialogTitle>
             <DialogDescription>

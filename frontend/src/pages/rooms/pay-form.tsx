@@ -99,7 +99,12 @@ const PayForm = forwardRef<PayFormHandles, PayFormProps>((_, ref) => {
         setOpen(open);
       }}
     >
-      <DialogContent className="max-w-sm">
+      <DialogContent
+        className="max-w-sm"
+        onOpenAutoFocus={(e) => {
+          e.preventDefault();
+        }}
+      >
         <DialogHeader>
           <DialogTitle>支付</DialogTitle>
           <DialogDescription className="flex items-center gap-1">
@@ -122,7 +127,7 @@ const PayForm = forwardRef<PayFormHandles, PayFormProps>((_, ref) => {
                 <FormItem>
                   <FormLabel>支付金额</FormLabel>
                   <FormControl>
-                    <Input {...field} className="h-10" />
+                    <Input {...field} className="h-10" type="number" />
                   </FormControl>
                   <FormDescription />
                   <FormMessage />
