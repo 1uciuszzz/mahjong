@@ -11,7 +11,7 @@ const Account = () => {
 
   return (
     <>
-      <div className="p-16 flex flex-col space-y-8">
+      <div className="p-10 flex flex-col space-y-8">
         <div className="flex justify-between">
           <p>用户名:</p>
           <p>{user?.username}</p>

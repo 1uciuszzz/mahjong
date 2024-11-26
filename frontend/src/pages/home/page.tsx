@@ -12,7 +12,7 @@ const HomePage = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="h-full p-16 flex flex-col gap-10 items-center">
+    <div className="h-full p-10 flex flex-col gap-10 items-center">
       <div className="flex items-center gap-2">
         <Brand className="w-16 h-16" />
         <h2 className="text-3xl">笨钟大学堂</h2>
