@@ -86,7 +86,7 @@ const RoomDetail = () => {
   }
 
   return (
-    <div className="p-10 flex flex-col gap-4">
+    <div className="p-10 pb-20 flex flex-col gap-4">
       <div className="flex items-center">
         <Button size="icon" variant="ghost" onClick={() => navigate(`/rooms`)}>
           <ArrowLeft />
