@@ -1,6 +1,6 @@
 import { AxiosResponse } from "axios";
 
-export interface Pagination {
+export interface PaginationPayload {
   page: number;
   size: number;
 }

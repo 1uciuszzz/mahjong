@@ -4,9 +4,9 @@ export class TokenPayload {
    */
   sub: string;
   /**
-   * The user's name
+   * The user's username
    */
-  name: string;
+  username: string;
   /**
    * Token issued at
    */

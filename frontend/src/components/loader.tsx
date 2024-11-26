@@ -1,17 +1,8 @@
-import { LinearProgress } from "@mui/material";
-import { useLoading } from "../stores/loading";
-
 const Loader = () => {
-  const loading = useLoading((state) => state.active);
-
   return (
-    <>
-      {loading ? (
-        <div className="fixed w-full z-50">
-          <LinearProgress />
-        </div>
-      ) : null}
-    </>
+    <div className="w-full h-screen flex justify-center items-center">
+      <p className="text-gray-500">加载中</p>
+    </div>
   );
 };
 

@@ -1,8 +1,17 @@
 import { forwardRef, useImperativeHandle } from "react";
 import { useImmer } from "use-immer";
-import { useUser } from "../stores/user";
 import { useNavigate } from "react-router-dom";
-import { Button, Dialog, DialogContent, DialogTitle } from "@mui/material";
+import { useSetAtom } from "jotai";
+import { userAtom } from "../stores/user-atom";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "./ui/dialog";
+import { Button } from "./ui/button";
 
 interface LogOutProps {}
 
@@ -17,31 +26,27 @@ const LogOut = forwardRef<LogOutHandles, LogOutProps>((_, ref) => {
 
   const [open, setOpen] = useImmer(false);
 
-  const userStore = useUser();
+  const setUser = useSetAtom(userAtom);
 
   const navigate = useNavigate();
 
   const logOut = () => {
     localStorage.clear();
-    userStore.setId("");
-    userStore.setName("");
+    setUser(null);
     navigate("/auth");
   };
 
   return (
-    <Dialog fullWidth open={open} onClose={() => setOpen(false)}>
-      <DialogTitle>退出登录</DialogTitle>
-      <DialogContent className="flex flex-col space-y-4">
-        <Button
-          variant="contained"
-          color="error"
-          onClick={() => setOpen(false)}
-        >
-          取消
-        </Button>
-        <Button variant="contained" color="success" onClick={logOut}>
-          确定
-        </Button>
+    <Dialog open={open} onOpenChange={(open) => setOpen(open)}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>退出登录</DialogTitle>
+          <DialogDescription />
+        </DialogHeader>
+        <p>您确定要退出登陆吗</p>
+        <DialogFooter>
+          <Button onClick={logOut}>确定</Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

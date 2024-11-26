@@ -20,27 +20,13 @@ export const router = createBrowserRouter([
       {
         path: "/rooms/:id",
         lazy: async () => ({
-          Component: (await import("./pages/rooms/roomDetail")).default,
+          Component: (await import("./pages/rooms/room-detail")).default,
         }),
-        children: [
-          {
-            path: "pay/:payeeId",
-            lazy: async () => ({
-              Component: (await import("./pages/rooms/payForm")).default,
-            }),
-          },
-        ],
       },
       {
         path: "/account",
         lazy: async () => ({
           Component: (await import("./pages/account/page")).default,
-        }),
-      },
-      {
-        path: "/analysis",
-        lazy: async () => ({
-          Component: (await import("./pages/analysis/page")).default,
         }),
       },
     ],
@@ -54,7 +40,13 @@ export const router = createBrowserRouter([
       {
         index: true,
         lazy: async () => ({
-          Component: (await import("./pages/auth/signin")).default,
+          Component: (await import("./pages/auth/sign-in")).default,
+        }),
+      },
+      {
+        path: "sign-up",
+        lazy: async () => ({
+          Component: (await import("./pages/auth/sign-up")).default,
         }),
       },
     ],

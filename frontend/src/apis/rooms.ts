@@ -1,61 +1,104 @@
 import { http } from "../utils/http";
 import { Room } from "../pages/rooms/page";
-import { Pagination, Res } from "./type";
+import { PaginationPayload, Res } from "./type";
+import { UserInfo } from "@/stores/user-atom";
 
-export interface User {
+export type User = {
   id: string;
   name: string;
-}
+};
 
-export interface UserStats {
+export type UserStats = {
   id: string;
   name: string;
   amount: number;
-}
+};
 
-export interface Expenditure {
+export type Expenditure = {
   id: string;
   payerId: string;
   payeeId: string;
   amount: number;
+  createdAt: string;
   roomId: string;
-  createAt: string;
-}
+  payee: UserInfo;
+  payer: UserInfo;
+};
 
-interface RoomDetailResponse {
-  room: Room;
-  roomUsers: User[];
-  expenditureStats: UserStats[];
+type RoomDetailResponse = {
+  roomWithUsers: Room & {
+    password: string;
+    userBalances: Record<
+      string,
+      {
+        balance: number;
+        expense: number;
+        income: number;
+        userId: string;
+      }
+    > | null;
+  };
+  expenditureStats: Record<
+    string,
+    {
+      balance: number;
+      expense: number;
+      income: number;
+      userId: string;
+    }
+  > | null;
   expenditures: Expenditure[];
-}
+};
 
-interface CreateRoomResponse {
+type CreateRoomResponse = {
   id: string;
   name: string;
   createdAt: string;
-}
+};
 
-interface RoomListItem {
-  id: string;
-  name: string;
-  active: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
-
-interface GetRoomsResponse {
-  rooms: RoomListItem[];
+type GetRoomsResponse = {
+  rooms: Room[];
   total: number;
-}
+};
+
+export type CreateRoomPayload = {
+  name: string;
+  password: string;
+};
 
 export const ROOMS_API = {
-  CREATE_ROOM: (): Res<CreateRoomResponse> => http.post(`/rooms`),
-  GET_ROOMS: (payload: Pagination): Res<GetRoomsResponse> =>
-    http.get(`/rooms`, { params: payload }),
-  GET_USERS: (roomId: string): Res<User[]> =>
-    http.get(`/rooms/${roomId}/users`),
-  ROOM_DETAIL: (id: string): Res<RoomDetailResponse> =>
-    http.get(`/rooms/${id}`),
-  JOIN_ROOM: (id: string) => http.post(`/rooms/join/${id}`),
-  CLOSE_ROOM: (id: string) => http.patch(`/rooms/${id}/close`),
+  CREATE_ROOM: {
+    key: "CREATE_ROOM",
+    fn: (payload: CreateRoomPayload): Res<CreateRoomResponse> =>
+      http.post(`/rooms`, payload),
+  },
+  GET_ROOMS: {
+    key: "GET_ROOMS",
+    fn: (payload: PaginationPayload): Res<GetRoomsResponse> =>
+      http.get(`/rooms`, { params: payload }),
+  },
+  GET_USERS: {
+    key: "GET_USERS",
+    fn: (roomId: string): Res<User[]> => http.get(`/rooms/${roomId}/users`),
+  },
+  ROOM_DETAIL: {
+    key: "ROOM_DETAIL",
+    fn: (id: string): Res<RoomDetailResponse> => http.get(`/rooms/${id}`),
+  },
+  JOIN_ROOM: {
+    key: "JOIN_ROOM",
+    fn: (
+      id: string,
+      password: string
+    ): Res<
+      Omit<Room, "users"> & {
+        password: string;
+        userBalances: null;
+      }
+    > => http.post(`/rooms/join/${id}`, { password }),
+  },
+  CLOSE_ROOM: {
+    key: "CLOSE_ROOM",
+    fn: (id: string) => http.patch(`/rooms/${id}/close`),
+  },
 };

@@ -3,6 +3,7 @@ import { ConfigType } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import { PrismaService } from "src/prisma.service";
 import JwtConfig from "./config/jwt.config";
+import { compare, genSalt, hash } from "bcrypt";
 
 @Injectable()
 export class AuthService {
@@ -26,49 +27,58 @@ export class AuthService {
     );
   }
 
-  async getUserByName(name: string) {
+  getUserByUsername = async (username: string) => {
     const user = await this.prisma.user.findUnique({
       where: {
-        name,
+        username,
       },
     });
     return user;
-  }
+  };
 
-  async signUp(name: string) {
+  hashPassword = async (password: string) => {
+    const salt = await genSalt();
+    const hashedPassword = await hash(password, salt);
+    return hashedPassword;
+  };
+
+  signUp = async (username: string, password: string, name: string) => {
+    const hashedPassword = await this.hashPassword(password);
     const user = await this.prisma.user.create({
       data: {
+        username,
+        password: hashedPassword,
         name,
       },
     });
     return user;
-  }
+  };
 
-  async signIn(name: string) {
-    const user = await this.prisma.user.findUnique({
-      where: {
-        name,
-      },
-    });
-    return user;
-  }
+  checkPassword = async (rawPassword: string, hashedPassword: string) => {
+    const res = await compare(rawPassword, hashedPassword);
+    return res;
+  };
 
-  async generateToken(id: string, name: string) {
-    const token = await this.signToken<{ name: string }>(
+  generateToken = async (id: string, username: string) => {
+    const token = await this.signToken<{ username: string }>(
       id,
       this.jwtConfig.accessTokenTtl,
-      { name },
+      { username },
     );
     return `Bearer ${token}`;
-  }
+  };
 
-  async getUserInfo(userId: string) {
+  getUserInfo = async (userId: string) => {
     const user = await this.prisma.user.findUnique({
+      select: {
+        id: true,
+        name: true,
+        username: true,
+      },
       where: {
         id: userId,
       },
     });
     return user;
-  }
+  };
 }
-

@@ -16,7 +16,7 @@ http.interceptors.request.use(
     return config;
   },
   (error) => {
-    return Promise.reject(error);
+    throw new Error(error);
   }
 );
 
@@ -29,9 +29,11 @@ http.interceptors.response.use(
       if (error.response?.status == 401) {
         localStorage.removeItem("token");
         router.navigate("/auth");
-        return Promise.reject("Unauthorized");
+        throw new Error(error.response.data.message);
+      } else {
+        throw new Error(error.response?.data.message);
       }
     }
-    return Promise.reject(error);
+    throw new Error(error);
   }
 );

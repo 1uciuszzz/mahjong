@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { ForbiddenException, Injectable } from "@nestjs/common";
 import { PrismaService } from "src/prisma.service";
 
 @Injectable()
@@ -13,50 +13,95 @@ export class RoomsService {
     });
   }
 
-  async createRoom(userName: string) {
+  async createRoom(roomName: string, password: string) {
     return await this.prisma.room.create({
       data: {
-        name: `${userName}创建的房间`,
+        name: roomName,
+        password,
       },
     });
   }
 
-  async isInRoom(userId: string, roomId: string) {
-    return await this.prisma.roomUser.findFirst({
+  async isUserInRoom(userId: string, roomId: string) {
+    return await this.prisma.user.findFirst({
       where: {
-        userId,
-        roomId,
-      },
-    });
-  }
-
-  async joinRoom(userId: string, roomId: string) {
-    return await this.prisma.roomUser.create({
-      data: {
-        roomId,
-        userId,
-      },
-    });
-  }
-
-  async getRoomUsers(roomId: string) {
-    const roomUsers = await this.prisma.roomUser.findMany({
-      where: {
-        roomId,
-      },
-    });
-    const userIds = roomUsers.map((item) => item.userId);
-    return await this.prisma.user.findMany({
-      where: {
-        id: {
-          in: userIds,
+        id: userId,
+        rooms: {
+          some: {
+            id: roomId,
+          },
         },
       },
     });
   }
 
-  async getRooms(skip: number, take: number) {
+  async joinRoom(userId: string, roomId: string) {
+    const room = await this.prisma.room.findUnique({
+      where: { id: roomId },
+      include: { users: true },
+    });
+
+    if (room?.users.some((user) => user.id === userId)) {
+      return room;
+    }
+
+    return await this.prisma.room.update({
+      where: { id: roomId },
+      data: {
+        users: {
+          connect: { id: userId },
+        },
+      },
+    });
+  }
+
+  async checkRoomPasswrod(roomId: string, password: string) {
+    const room = await this.prisma.room.findUnique({ where: { id: roomId } });
+    if (!room.password) {
+      return true;
+    }
+    return password == room.password;
+  }
+
+  async getRoomWithUsers(roomId: string) {
+    const roomWithUsers = await this.prisma.room.findUnique({
+      where: { id: roomId },
+      include: {
+        users: {
+          select: {
+            id: true,
+            name: true,
+            username: true,
+          },
+        },
+      },
+    });
+    return roomWithUsers;
+  }
+
+  async getRooms(userId: string, skip: number, take: number) {
     return await this.prisma.room.findMany({
+      select: {
+        id: true,
+        active: true,
+        closedAt: true,
+        createdAt: true,
+        name: true,
+        users: {
+          select: {
+            id: true,
+            username: true,
+            name: true,
+          },
+        },
+      },
+      where: {
+        users: {
+          some: {
+            id: userId,
+          },
+        },
+      },
       orderBy: {
         createdAt: "desc",
       },
@@ -66,63 +111,114 @@ export class RoomsService {
   }
 
   async getUsersExpenditureStats(roomId: string) {
-    const roomUsers = await this.getRoomUsers(roomId);
-    const userStats = await Promise.all(
-      roomUsers.map(async (user) => {
-        const payed = await this.prisma.expenditure.aggregate({
-          _sum: {
-            amount: true,
-          },
-          where: {
-            roomId,
-            payerId: user.id,
-          },
-        });
-        const received = await this.prisma.expenditure.aggregate({
-          _sum: {
-            amount: true,
-          },
-          where: {
-            roomId,
-            payeeId: user.id,
-          },
-        });
-        const status = received._sum.amount - payed._sum.amount;
-        return {
-          id: user.id,
-          name: user.name,
-          amount: status,
+    const expenses = await this.prisma.expenditure.groupBy({
+      by: ["payerId"],
+      _sum: { amount: true },
+      where: { roomId },
+    });
+    const incomes = await this.prisma.expenditure.groupBy({
+      by: ["payeeId"],
+      _sum: { amount: true },
+      where: { roomId },
+    });
+    const balances: Record<
+      string,
+      { userId: string; income: number; expense: number; balance: number }
+    > = {};
+
+    expenses.forEach((expense) => {
+      const { payerId, _sum } = expense;
+      if (!balances[payerId]) {
+        balances[payerId] = {
+          userId: payerId,
+          income: 0,
+          expense: 0,
+          balance: 0,
         };
-      }),
-    );
-    return userStats;
+      }
+      balances[payerId].expense = _sum.amount || 0;
+    });
+
+    incomes.forEach((income) => {
+      const { payeeId, _sum } = income;
+      if (!balances[payeeId]) {
+        balances[payeeId] = {
+          userId: payeeId,
+          income: 0,
+          expense: 0,
+          balance: 0,
+        };
+      }
+      balances[payeeId].income = _sum.amount || 0;
+    });
+    Object.values(balances).forEach((balance) => {
+      balance.balance = balance.income - balance.expense;
+    });
+
+    return balances;
   }
 
   async getExpenditures(roomId: string) {
     return await this.prisma.expenditure.findMany({
-      take: 10,
+      take: 12,
       where: {
         roomId,
       },
       orderBy: {
-        createAt: "desc",
+        createdAt: "desc",
+      },
+      include: {
+        payee: {
+          select: {
+            id: true,
+            name: true,
+            username: true,
+          },
+        },
+        payer: {
+          select: {
+            id: true,
+            name: true,
+            username: true,
+          },
+        },
       },
     });
   }
 
-  async closeRoom(roomId: string) {
-    return await this.prisma.room.update({
-      where: {
-        id: roomId,
-      },
+  async closeRoom(userId: string, roomId: string) {
+    const balances = await this.getUsersExpenditureStats(roomId);
+
+    if (!balances[userId]) {
+      throw new ForbiddenException(`你不在此房间中,无法关闭该房间`);
+    }
+
+    const room = await this.prisma.room.update({
+      where: { id: roomId },
       data: {
         active: false,
+        closedAt: new Date(),
+        userBalances: balances,
       },
     });
+
+    await this.prisma.expenditure.deleteMany({
+      where: { roomId },
+    });
+
+    return room;
   }
 
-  getCount = async () => {
-    const count = await this.prisma.room.count();
+  getCount = async (userId: string) => {
+    const count = await this.prisma.room.count({
+      where: {
+        users: {
+          some: {
+            id: userId,
+          },
+        },
+      },
+    });
     return count;
   };
 }

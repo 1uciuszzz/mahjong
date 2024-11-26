@@ -1,16 +1,19 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import "./index.css";
-import "@fontsource/roboto/300.css";
-import "@fontsource/roboto/400.css";
-import "@fontsource/roboto/500.css";
-import "@fontsource/roboto/700.css";
 
 import { RouterProvider } from "react-router-dom";
 import { router } from "./router";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Toaster } from "sonner";
+
+const queryClient = new QueryClient();
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
-  <React.StrictMode>
-    <RouterProvider router={router} />
-  </React.StrictMode>
+  <QueryClientProvider client={queryClient}>
+    <React.StrictMode>
+      <RouterProvider router={router} />
+      <Toaster position="top-center" />
+    </React.StrictMode>
+  </QueryClientProvider>
 );

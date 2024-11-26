@@ -1,43 +1,43 @@
-import { AccountCircle, Home, TrendingUp } from "@mui/icons-material";
-import { BottomNavigation, BottomNavigationAction } from "@mui/material";
-import { NavLink } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useImmer } from "use-immer";
+import { Tabs, TabsList, TabsTrigger } from "./ui/tabs";
 
 const BottomNav = () => {
   const [active, setActive] = useImmer<string>("home");
 
-  const handleChange = (value: string) => {
-    setActive(value);
-  };
+  const navigate = useNavigate();
 
   return (
-    <BottomNavigation
-      className="w-full fixed bottom-0"
-      value={active}
-      onChange={(_, v) => handleChange(v)}
-    >
-      <BottomNavigationAction
-        label="首页"
-        value="home"
-        icon={<Home />}
-        component={NavLink}
-        to="/"
-      />
-      <BottomNavigationAction
-        label="分析"
-        value="analysis"
-        icon={<TrendingUp />}
-        component={NavLink}
-        to="/analysis"
-      />
-      <BottomNavigationAction
-        label="我的"
-        value="account"
-        icon={<AccountCircle />}
-        component={NavLink}
-        to="/account"
-      />
-    </BottomNavigation>
+    <nav className="fixed w-full left-0 bottom-0">
+      <Tabs
+        value={active}
+        onValueChange={(value) => {
+          setActive(value);
+        }}
+      >
+        <TabsList className="grid grid-cols-2 h-12">
+          <TabsTrigger
+            className="h-full"
+            value="home"
+            onClick={() => {
+              navigate(`/`);
+            }}
+          >
+            首页
+          </TabsTrigger>
+
+          <TabsTrigger
+            className="h-full"
+            value="account"
+            onClick={() => {
+              navigate(`/account`);
+            }}
+          >
+            账号
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
+    </nav>
   );
 };
 

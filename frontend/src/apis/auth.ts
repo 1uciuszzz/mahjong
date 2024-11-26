@@ -1,21 +1,38 @@
 import axios, { AxiosResponse } from "axios";
 import { http } from "../utils/http";
 
-interface SignInRequest {
-  name: string;
-}
+export type SignInPayload = {
+  username: string;
+  password: string;
+};
 
-interface SignInResponse {
+type SignInRes = {
   token: string;
-}
+};
 
-interface UserInfoResponse {
+type UserInfoResponse = {
   id: string;
   name: string;
-}
+  username: string;
+};
+
+export type SignUpPayload = SignInPayload & {
+  name: string;
+};
 
 export const AUTH_API = {
-  USER_INFO: (): Promise<AxiosResponse<UserInfoResponse>> => http.get(`/auth`),
-  SIGN_IN: (payload: SignInRequest): Promise<AxiosResponse<SignInResponse>> =>
-    axios.post(`/api/auth/sign-in`, payload),
+  USER_INFO: {
+    key: "USER_INFO",
+    fn: (): Promise<AxiosResponse<UserInfoResponse>> => http.get(`/auth`),
+  },
+  SIGN_IN: {
+    key: "SIGN_IN",
+    fn: (payload: SignInPayload): Promise<AxiosResponse<SignInRes>> =>
+      axios.post(`/api/auth/sign-in`, payload),
+  },
+  SIGN_UP: {
+    key: "SIGN_UP",
+    fn: (payload: SignUpPayload): Promise<AxiosResponse<SignInRes>> =>
+      axios.post(`/api/auth/sign-up`, payload),
+  },
 };

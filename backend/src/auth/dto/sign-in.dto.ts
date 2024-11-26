@@ -1,6 +1,8 @@
 import { ApiProperty } from "@nestjs/swagger";
 
 export class SignInDto {
-  @ApiProperty({ description: "Name must be unique" })
-  name: string;
+  @ApiProperty()
+  username: string;
+  @ApiProperty()
+  password: string;
 }

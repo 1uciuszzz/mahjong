@@ -1,78 +1,76 @@
-import { useEffect } from "react";
-import { useLoading } from "../../stores/loading";
 import { ROOMS_API } from "../../apis/rooms";
 import { useImmer } from "use-immer";
-import { Button, IconButton, Pagination, Typography } from "@mui/material";
-import RoomList from "./roomList";
+import RoomList from "./room-list";
 import { useNavigate } from "react-router-dom";
-import { ArrowBackIosNew } from "@mui/icons-material";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { PaginationPayload } from "@/apis/type";
+import Loader from "@/components/loader";
+import ErrorMsg from "@/components/error";
+import Pagination from "@/components/pagination";
+import { UserInfo } from "@/stores/user-atom";
 
-export interface Room {
+export type Room = {
   id: string;
   name: string;
   active: boolean;
   createdAt: string;
-  updatedAt: string;
-}
+  closedAt: string | null;
+  users: UserInfo[];
+};
 
 const Rooms = () => {
-  const activate = useLoading((state) => state.activate);
-
-  const loading = useLoading((state) => state.active);
-
-  const [rooms, setRooms] = useImmer<Room[]>([]);
-
-  const [total, setTotal] = useImmer<number>(0);
-
-  const [page, setPage] = useImmer<number>(1);
-
-  const [size] = useImmer<number>(10);
-
-  const getRooms = async () => {
-    try {
-      activate(true);
-      const res = await ROOMS_API.GET_ROOMS({ page, size });
-      setRooms(res.data.rooms);
-      setTotal(res.data.total);
-    } catch {
-      console.error("Failed to get rooms");
-    } finally {
-      activate(false);
-    }
-  };
-
-  useEffect(() => {
-    getRooms();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page]);
+  const [queryParams, setQueryParams] = useImmer<PaginationPayload>({
+    page: 1,
+    size: 10,
+  });
 
   const navigate = useNavigate();
 
+  const { isPending, isError, error, data, refetch } = useQuery({
+    queryKey: [ROOMS_API.GET_ROOMS.key],
+    queryFn: () => ROOMS_API.GET_ROOMS.fn(queryParams),
+  });
+
+  if (isPending) {
+    return <Loader />;
+  }
+
+  if (isError) {
+    return <ErrorMsg msg={error.message} />;
+  }
+
   return (
-    <div className="m-8 flex flex-col space-y-8">
-      <div className="flex">
-        <IconButton onClick={() => navigate(`/`)} disabled={loading}>
-          <ArrowBackIosNew />
-        </IconButton>
-        <Typography variant="h4">房间列表</Typography>
+    <div className="p-16 flex flex-col gap-4">
+      <div className="flex items-center">
+        <Button variant="ghost" size="icon" onClick={() => navigate(`/`)}>
+          <ArrowLeft />
+        </Button>
+        <h2 className="text-2xl">房间列表</h2>
       </div>
       <Button
-        onClick={getRooms}
-        variant="contained"
-        color="success"
-        disabled={loading}
+        className="h-10"
+        disabled={isPending}
+        onClick={() => {
+          refetch();
+        }}
       >
         刷新数据
       </Button>
-      <RoomList rooms={rooms} />
+
+      <RoomList rooms={data.data.rooms} />
 
       <Pagination
-        size="large"
-        count={Math.ceil(total / size)}
-        page={page}
-        disabled={loading}
-        onChange={(_, page) => setPage(page)}
-        siblingCount={1}
+        page={queryParams.page}
+        size={queryParams.size}
+        total={data.data.total}
+        onPageChange={(page) => {
+          setQueryParams((d) => {
+            d.page = page;
+            return d;
+          });
+        }}
       />
     </div>
   );
