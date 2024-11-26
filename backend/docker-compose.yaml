@@ -1,7 +1,8 @@
 services:
   mahjong:
-    image: backend/mahjong
-    container_name: backend/mahjong
+    build: .
+    image: mahjong:241126
+    container_name: mahjong
     restart: always
     ports:
       - "24301:3000"
