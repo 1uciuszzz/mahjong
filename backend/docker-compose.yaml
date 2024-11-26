@@ -1,12 +1,10 @@
 services:
   mahjong:
-    container_name: mahjong
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: backend/mahjong
+    container_name: backend/mahjong
+    restart: always
     ports:
       - "24301:3000"
-    restart: always
     environment:
       JWT_SECRET: ""
       JWT_ACCESS_TOKEN_TTL: ""
