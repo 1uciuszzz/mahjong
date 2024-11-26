@@ -13,6 +13,8 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import UserPayItem from "./user-pay-item";
 import PayForm, { PayFormHandles } from "./pay-form";
 import ExpenditureItem from "./expenditure-item";
+import { useAtomValue } from "jotai";
+import { userAtom } from "@/stores/user-atom";
 
 const RoomDetail = () => {
   const { id } = useParams<{ id: string | undefined }>();
@@ -72,6 +74,8 @@ const RoomDetail = () => {
   const ShareRef = useRef<ShareHandles>(null);
 
   const PayFormRef = useRef<PayFormHandles>(null);
+
+  const userInfo = useAtomValue(userAtom);
 
   if (isPending || autoJoinIsPending) {
     return <Loader />;
@@ -139,7 +143,7 @@ const RoomDetail = () => {
                       : 0
                 }
                 onPay={(payee) => {
-                  if (user.id !== payee.id) {
+                  if (userInfo?.id !== payee.id) {
                     PayFormRef.current?.setOpen(true, payee);
                   }
                 }}
