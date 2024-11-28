@@ -1,7 +1,7 @@
 services:
   mahjong:
     build: .
-    image: mahjong:241126
+    image: mahjong:241128
     container_name: mahjong
     restart: always
     ports:
