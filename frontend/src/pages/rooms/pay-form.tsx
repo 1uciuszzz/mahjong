@@ -71,7 +71,11 @@ const PayForm = forwardRef<PayFormHandles, PayFormProps>((_, ref) => {
   const { isPending, mutate: pay } = useMutation({
     mutationFn: (amount: number) => {
       if (id && payee) {
-        return EXPENDITURES_API.CREATE_EXPENDITURE.fn(id, payee.id, amount);
+        return EXPENDITURES_API.CREATE_EXPENDITURE.fn({
+          roomId: id,
+          payeeId: payee.id,
+          amount,
+        });
       } else {
         throw new Error(`参数缺失`);
       }

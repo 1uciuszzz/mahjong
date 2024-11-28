@@ -16,7 +16,7 @@ import { CreateExpenditureDto } from "./dto/create-expenditure.dto";
 export class ExpendituresController {
   constructor(private readonly expendituresService: ExpendituresService) {}
 
-  @Post(":roomId/:payeeId/:amount")
+  @Post()
   @Auth(AuthType.Bearer)
   async createExpenditure(
     @User() user: TokenPayload,
