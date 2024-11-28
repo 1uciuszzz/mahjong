@@ -143,7 +143,10 @@ const RoomDetail = () => {
                       : 0
                 }
                 onPay={(payee) => {
-                  if (userInfo?.id !== payee.id) {
+                  if (
+                    userInfo?.id !== payee.id &&
+                    data.data.roomWithUsers.active
+                  ) {
                     PayFormRef.current?.setOpen(true, payee);
                   }
                 }}
