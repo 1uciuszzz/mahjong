@@ -42,6 +42,7 @@ const HomePage = () => {
           backgroundImage: `url(${bannerURL})`,
           backgroundRepeat: "no-repeat",
           backgroundSize: "contain",
+          backgroundPosition: "center",
         }}
       ></div>
 
