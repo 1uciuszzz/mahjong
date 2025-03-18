@@ -81,4 +81,21 @@ export class AuthService {
     });
     return user;
   };
+
+  changeUserInfo = async (userId: string, name: string) => {
+    const updatedUser = await this.prisma.user.update({
+      select: {
+        id: true,
+        name: true,
+        username: true,
+      },
+      where: {
+        id: userId,
+      },
+      data: {
+        name,
+      },
+    });
+    return updatedUser;
+  };
 }

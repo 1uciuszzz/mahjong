@@ -3,6 +3,7 @@ import {
   Controller,
   ForbiddenException,
   Get,
+  Patch,
   Post,
 } from "@nestjs/common";
 import { AuthService } from "./auth.service";
@@ -12,6 +13,7 @@ import { AuthType } from "./enums/auth-type.enum";
 import { User } from "src/shared/decorators/user.decorator";
 import { TokenPayload } from "src/shared/entities/token-payload.entity";
 import { SignUpDto } from "./dto/sign-up.dto";
+import { ChangeUserInfoDto } from "./dto/change-user-info.dto";
 
 @Controller("auth")
 export class AuthController {
@@ -55,5 +57,18 @@ export class AuthController {
   @Auth(AuthType.Bearer)
   getUserInfo(@User() user: TokenPayload) {
     return this.authService.getUserInfo(user.sub);
+  }
+
+  @Patch("profile")
+  @Auth(AuthType.Bearer)
+  async changeUserInfo(
+    @User() user: TokenPayload,
+    @Body() payload: ChangeUserInfoDto,
+  ) {
+    const updatedUser = await this.authService.changeUserInfo(
+      user.sub,
+      payload.name,
+    );
+    return updatedUser;
   }
 }

@@ -187,11 +187,13 @@ export class RoomsService {
   }
 
   async closeRoom(userId: string, roomId: string) {
-    const balances = await this.getUsersExpenditureStats(roomId);
+    const isInRoom = await this.isUserInRoom(userId, roomId);
 
-    if (!balances[userId]) {
+    if (!isInRoom) {
       throw new ForbiddenException(`你不在此房间中,无法关闭该房间`);
     }
+
+    const balances = await this.getUsersExpenditureStats(roomId);
 
     const room = await this.prisma.room.update({
       where: { id: roomId },
