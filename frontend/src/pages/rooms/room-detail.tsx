@@ -15,6 +15,7 @@ import PayForm, { PayFormHandles } from "./pay-form";
 import ExpenditureItem from "./expenditure-item";
 import { useAtomValue } from "jotai";
 import { userAtom } from "@/stores/user-atom";
+import { toast } from "sonner";
 
 const RoomDetail = () => {
   const { id } = useParams<{ id: string | undefined }>();
@@ -68,6 +69,9 @@ const RoomDetail = () => {
       queryClient.invalidateQueries({
         queryKey: [ROOMS_API.ROOM_DETAIL.key],
       });
+    },
+    onError: (error) => {
+      toast.error(error.message);
     },
   });
 

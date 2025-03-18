@@ -17,9 +17,9 @@ const HomePage = () => {
         <Brand className="w-16 h-16" />
         <h2 className="text-3xl">笨钟大学堂</h2>
       </div>
-      <div className="w-full flex gap-10">
+      <div className="w-full flex flex-col gap-10">
         <Button
-          className="flex-1 h-16"
+          className="h-16"
           onClick={() => {
             CreateRoomFormRef.current?.open();
           }}
@@ -27,7 +27,8 @@ const HomePage = () => {
           创建房间
         </Button>
         <Button
-          className="flex-1 h-16"
+          className="h-16"
+          variant="secondary"
           onClick={() => {
             navigate(`/rooms`);
           }}

@@ -25,7 +25,7 @@ const UserPayItem = ({ user, userBalance, onPay }: UserPayItemProps) => {
         <AvatarImage src="" />
         <AvatarFallback className="text-xs">{user.name}</AvatarFallback>
       </Avatar>
-      <Badge className="font-mono">{userBalance}</Badge>
+      <Badge className="font-mono">{userBalance || 0}</Badge>
     </div>
   );
 };

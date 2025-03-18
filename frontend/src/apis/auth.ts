@@ -20,6 +20,10 @@ export type SignUpPayload = SignInPayload & {
   name: string;
 };
 
+export type ChangeUserInfoPayload = {
+  name: string;
+};
+
 export const AUTH_API = {
   USER_INFO: {
     key: "USER_INFO",
@@ -34,5 +38,12 @@ export const AUTH_API = {
     key: "SIGN_UP",
     fn: (payload: SignUpPayload): Promise<AxiosResponse<SignInRes>> =>
       axios.post(`/api/auth/sign-up`, payload),
+  },
+  CHANGE_USER_INFO: {
+    key: "CHANGE_USER_INFO",
+    fn: (
+      payload: ChangeUserInfoPayload
+    ): Promise<AxiosResponse<UserInfoResponse>> =>
+      http.patch(`/auth/profile`, payload),
   },
 };

@@ -47,7 +47,6 @@ const SignInPage = () => {
   const { isPending, mutate: signIn } = useMutation({
     mutationFn: (payload: SignInPayload) => AUTH_API.SIGN_IN.fn(payload),
     onSuccess: (res) => {
-      toast(`登陆成功`);
       localStorage.setItem("token", res.data.token);
       navigate(`/`);
     },

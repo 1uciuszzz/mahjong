@@ -25,6 +25,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { randomStr } from "@/utils/random-str";
 
 type CreateRoomFormProps = object;
 
@@ -71,7 +72,6 @@ const CreateRoomForm = forwardRef<CreateRoomFormHandles, CreateRoomFormProps>(
       mutationFn: (payload: CreateRoomPayload) =>
         ROOMS_API.CREATE_ROOM.fn(payload),
       onSuccess: (res) => {
-        toast(`创建房间成功`);
         setOpen(false);
         navigate(`/rooms/${res.data.id}`);
       },
@@ -82,6 +82,17 @@ const CreateRoomForm = forwardRef<CreateRoomFormHandles, CreateRoomFormProps>(
 
     const onSubmit = (values: z.infer<typeof schema>) => {
       createRoom(values);
+    };
+
+    const [isCustom, setIsCustom] = useImmer<boolean>(false);
+
+    const handleQuickCreate = () => {
+      const name = randomStr(6);
+      const password = randomStr(6);
+      createRoom({
+        name,
+        password,
+      });
     };
 
     return (
@@ -97,44 +108,57 @@ const CreateRoomForm = forwardRef<CreateRoomFormHandles, CreateRoomFormProps>(
             <DialogDescription />
           </DialogHeader>
 
-          <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit(onSubmit)}
-              className="flex flex-col gap-4"
-            >
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>房间名称</FormLabel>
-                    <FormControl>
-                      <Input {...field} className="h-10" />
-                    </FormControl>
-                    <FormDescription />
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>房间密码</FormLabel>
-                    <FormControl>
-                      <Input {...field} className="h-10" />
-                    </FormControl>
-                    <FormDescription />
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <Button type="submit" size="lg" disabled={isCreateRoomPending}>
-                提交
-              </Button>
-            </form>
-          </Form>
+          <Button onClick={handleQuickCreate}>快速创建</Button>
+
+          <Button
+            variant="secondary"
+            onClick={() => {
+              setIsCustom((d) => !d);
+            }}
+          >
+            自定义
+          </Button>
+
+          {isCustom && (
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="flex flex-col gap-4"
+              >
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>房间名称</FormLabel>
+                      <FormControl>
+                        <Input {...field} className="h-10" />
+                      </FormControl>
+                      <FormDescription />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>房间密码</FormLabel>
+                      <FormControl>
+                        <Input {...field} className="h-10" />
+                      </FormControl>
+                      <FormDescription />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <Button type="submit" size="lg" disabled={isCreateRoomPending}>
+                  提交
+                </Button>
+              </form>
+            </Form>
+          )}
         </DialogContent>
       </Dialog>
     );
