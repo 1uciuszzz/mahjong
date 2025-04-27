@@ -42,7 +42,7 @@ const Rooms = () => {
   }
 
   return (
-    <div className="py-16 px-10 flex flex-col gap-4">
+    <div className="p-10 pb-16 flex flex-col gap-4">
       <div className="flex items-center">
         <Button variant="ghost" size="icon" onClick={() => navigate(`/`)}>
           <ArrowLeft />
