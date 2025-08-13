@@ -16,7 +16,7 @@
     "db:gen": "pnpm dlx prisma generate",
     "db:push": "pnpm dlx prisma db push",
     "release": "npx ncc build src/main.ts -o release -m",
-    "deploy": "pm2 start release/index.js --name mahjong-service -i 4"
+    "deploy": "pm2 start dist/main.js --name mahjong-service -i 4"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.537.0",
