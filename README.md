@@ -1,43 +1,55 @@
-# Benbellschool
+# 随手记账
+
+一个无账号、无中心化业务服务器的局域网 P2P 记账应用。
+
+## 当前能力
+
+- Material UI 移动端界面
+- 使用代号进入房间，不需要注册和登录
+- WebRTC DataChannel 建立点对点连接
+- 房间成员之间严格全互联，账单数据不经过房主中转
+- 邀请二维码完成首次连接，扫描成功后自动加入/接受
+- IndexedDB 保存本机身份、房间和账单事件
+- AES-GCM 加密账单内容
+- P-256 签名和 SHA-256 事件哈希
+- 账单事件广播、去重和余额重算
+- 账单撤销事件，不直接删除历史
+- PBKDF2 + AES-GCM 加密备份与导入
+- 本机房间恢复和重新生成邀请
 
 ## 启动
 
-1. 安装依赖项
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+开发环境可以使用 `http://localhost`。如果从局域网其他设备访问，需要使用 HTTPS，因为 Web Crypto、摄像头二维码能力和部分浏览器能力需要安全上下文。
+
+## 公网部署
+
+公网服务器可以只提供静态前端，不需要部署业务数据库。设备都在同一 Wi‑Fi 时，可以不配置 ICE Server；只要通过 HTTPS 打开页面，WebRTC 通常会直接建立局域网连接。若未来需要跨网络使用，再配置 STUN/TURN：
 
 ```bash
-npm i
-pnpm i
+VITE_ICE_SERVERS='[{"urls":["stun:stun.example.com:3478"]},{"urls":["turns:turn.example.com:5349"],"username":"临时用户名","credential":"临时密码"}]'
 ```
 
-2. 修改环境变量
+然后重新构建并把 `frontend/dist` 放到 HTTPS 的 Nginx/Caddy 站点。TURN 凭证应由服务端按短时效动态生成，不能把长期账号密码提交到前端或 Git。当前通过二维码完成手动信令，不需要复制文本；如果要做到“输入房间码自动加入”，还需要增加一个只保存临时连接状态的 WSS 信令服务。
 
-`docker-compose.yaml`：
+## 使用流程
 
-```yaml
-backend:
-  build:
-    context: ./backend
-    dockerfile: Dockerfile
-  restart: always
-  environment:
-    # 请修改下列变量
-    DATABASE_URL: postgresql://postgres:postgres@db:23301/postgres?schema=public
-    JWT_SECRET: 78b37db2f09767c7ad3eb47c903739359c69aa57080c2710db92fcb1809f8cd4
-    JWT_ACCESS_TOKEN_TTL: 86400
-  ports:
-    - "23302:3000"
-  depends_on:
-    - db
-```
+1. 输入自己的代号，创建本地账本。
+2. 房主展示房间邀请二维码。
+3. 成员扫描二维码，自动生成回答二维码。
+4. 房主扫描成员回答二维码，双方自动建立 WebRTC 连接。
+5. 任意成员新增账单，事件会加密后广播给房间成员。
 
-3. 构建映像
+房主只在首次加入时承担信令和成员发现；成员之间建立直连后，账单事件通过去重 gossip 在 mesh 内传播。房主离线后，已经互联的成员仍可继续同步；如果要加入新成员，则需要房主重新在线完成信令。应用没有公网信令服务和业务数据库，每台设备都保存一份本地事件副本。
 
-```bash
-docker compose build
-```
+## 边界
 
-4. 部署
-
-```bash
-docker compose up -d
-```
+- 同一 Wi‑Fi 通常不需要 TURN；跨网络、复杂 NAT 或开启 Wi‑Fi 客户端隔离时，可能需要 TURN，甚至无法建立直连。
+- 网站托管在公网不代表设备需要跨网连接；只有成员处于不同网络时，才需要 TURN 来提高连接成功率。
+- 全互联连接数随成员数按 `n × (n - 1) / 2` 增长，适合小型面对面房间，不适合大型群组。
+- 房间密钥包含在邀请二维码中，二维码本身就是入场凭证；不要把它发布到公开频道。

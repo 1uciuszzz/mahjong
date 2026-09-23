@@ -1,13 +1,13 @@
 {
-  "name": "full-stack-template",
+  "name": "p2p-ledger",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "无账号、无中心化业务服务器的 P2P 记账应用",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "npm --prefix frontend run dev",
+    "build": "npm --prefix frontend run build",
+    "lint": "npm --prefix frontend run lint"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
-  "packageManager": "pnpm@9.14.1+sha512.7f1de9cffea40ff4594c48a94776112a0db325e81fb18a9400362ff7b7247f4fbd76c3011611c9f8ac58743c3dc526017894e07948de9b72052f874ee2edfdcd"
+  "license": "ISC"
 }
